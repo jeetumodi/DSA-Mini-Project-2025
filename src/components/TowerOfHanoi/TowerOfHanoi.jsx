@@ -20,6 +20,13 @@ const TowerOfHanoi = () => {
   const [selectedDisk, setSelectedDisk] = useState(null)
   const [manualMoves, setManualMoves] = useState(0)
   const [isValidMove, setIsValidMove] = useState(true)
+  // TIMING -------------------------------------------------
+  // Elapsed-time tracking for Auto mode. If you don't need it, you can
+  // remove or comment these lines again.
+  const [startTime, setStartTime] = useState(null)
+  const [endTime, setEndTime] = useState(null)
+  const [elapsedTime, setElapsedTime] = useState(0)
+  // -------------------------------------------------------
 
   const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE']
 
@@ -38,6 +45,19 @@ const TowerOfHanoi = () => {
       setIsPlaying(false)
     }
   }, [isPlaying, currentStep, moves.length, speed, mode])
+  // TIMING: detect finish
+  // Compute elapsedTime when the auto-play run finishes.
+  useEffect(() => {
+    if (moves.length > 0 && currentStep >= moves.length) {
+      if (startTime) {
+        const now = Date.now()
+        setEndTime(now)
+        setElapsedTime(now - startTime)
+      }
+      setIsPlaying(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, moves.length])
 
   useEffect(() => {
     if (mode === 'auto' && currentStep > 0 && currentStep <= moves.length) {
@@ -99,6 +119,10 @@ const TowerOfHanoi = () => {
     setSelectedDisk(null)
     setManualMoves(0)
     setIsValidMove(true)
+    // Clear timing
+    setStartTime(null)
+    setEndTime(null)
+    setElapsedTime(0)
   }
 
   const animateMove = (move) => {
@@ -134,8 +158,22 @@ const TowerOfHanoi = () => {
 
   const handlePlayPause = () => {
     if (currentStep >= moves.length) {
+      // If finished: reset then immediately start a new run and timing
       resetGame()
+      setTimeout(() => {
+        setStartTime(Date.now())
+        setIsPlaying(true)
+      }, 0)
+      return
     }
+
+    // Starting fresh from step 0 -> mark start time
+    if (!isPlaying && currentStep === 0) {
+      setStartTime(Date.now())
+      setEndTime(null)
+      setElapsedTime(0)
+    }
+
     setIsPlaying((p) => !p)
   }
 
@@ -312,6 +350,8 @@ const TowerOfHanoi = () => {
           totalMoves={totalMoves}
           animatingDisk={animatingDisk}
           manualMoves={manualMoves}
+          // Pass elapsedTime to Controls
+          elapsedTime={elapsedTime}
         />
       </div>
     </div>

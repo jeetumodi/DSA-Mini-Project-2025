@@ -1,7 +1,7 @@
 import React from 'react'
 import { Play, Pause, RotateCcw, ChevronRight } from 'lucide-react'
 
-const Controls = ({ numDisks, setNumDisks, speed, setSpeed, mode, isPlaying, handlePlayPause, handleNext, resetGame, currentStep, totalMoves, animatingDisk, manualMoves }) => {
+const Controls = ({ numDisks, setNumDisks, speed, setSpeed, mode, isPlaying, handlePlayPause, handleNext, resetGame, currentStep, totalMoves, animatingDisk, manualMoves, elapsedTime }) => {
   return (
     <div className="bg-gray-800 bg-opacity-50 backdrop-blur rounded-lg p-6 border border-gray-700">
       <div className="flex flex-wrap items-center gap-4">
@@ -33,6 +33,14 @@ const Controls = ({ numDisks, setNumDisks, speed, setSpeed, mode, isPlaying, han
                 className="w-32"
               />
               <span className="text-sm w-16">{(2200 - speed) / 200}x</span>
+            </div>
+
+            {/* Elapsed time display */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium">Elapsed:</label>
+              <div className="text-sm font-bold">
+                {elapsedTime && elapsedTime > 0 ? `${(elapsedTime / 1000).toFixed(2)}s` : '--'}
+              </div>
             </div>
 
             <div className="flex gap-2 ml-auto">
