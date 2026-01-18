@@ -68,35 +68,105 @@ const TowerOfHanoi = () => {
   }, [currentStep, mode])
 
   const generateAlgorithm = () => {
-    return `def hanoi(n, source, target, auxiliary):\n    # Base case: only 1 disk to move\n    if n == 1:\n        move disk from source to target\n        return\n    \n    # Recursive case:\n    # Step 1: Move n-1 disks from source to auxiliary\n    hanoi(n-1, source, auxiliary, target)\n    \n    # Step 2: Move the largest disk to target\n    move disk from source to target\n    \n    # Step 3: Move n-1 disks from auxiliary to target\n    hanoi(n-1, auxiliary, target, source)`
-  }
+  return `# Iterative Tower of Hanoi (non-recursive)
+# Uses the modulo-3 rule to determine which rods to move between.
+# For even n, swap target and auxiliary to get correct move sequence.
 
-  const solveHanoi = (n, source, target, auxiliary, movesList = [], stack = []) => {
-    if (n === 1) {
-      movesList.push({
-        from: source,
-        to: target,
-        disk: 1,
-        stack: [...stack, `hanoi(1, ${source}, ${target}, ${auxiliary})`],
-        description: `Base case: Move disk 1 from ${source} to ${target}`
-      })
-      return movesList
+function solveIterative(n, source, target, auxiliary):
+    total_moves = 2^n - 1
+    if n % 2 == 0:
+        swap(target, auxiliary)
+
+    for move in 1..total_moves:
+        if move % 3 == 1:
+            # Move between source and target rods
+            CALL Move_Disk_Between_Two_Rods(source, target)
+        else if move % 3 == 2:
+            # Move between source and auxiliary rods
+            CALL Move_Disk_Between_Two_Rods(source, auxiliary)
+        else:
+            # move % 3 == 0
+            # Move between auxiliary and target rods
+            CALL Move_Disk_Between_Two_Rods(auxiliary, target)
+
+function Move_Disk_Between_Two_Rods(rod1, rod2):
+    # Move smaller top disk onto larger one or to an empty rod
+    if rod1 is empty:
+        move top disk from rod2 → rod1
+    else if rod2 is empty:
+        move top disk from rod1 → rod2
+    else if top(rod1) > top(rod2):
+        move top disk from rod2 → rod1
+    else:
+        move top disk from rod1 → rod2`
+}
+
+
+  // Iterative move generator (non-recursive)
+  // Simulates the pegs and produces the sequence of moves.
+  const solveHanoi = (n, source, target, auxiliary) => {
+    const movesList = []
+
+    // Initialize pegs with arrays (top at end)
+    const pegs = {
+      [source]: Array.from({ length: n }, (_, i) => n - i),
+      [target]: [],
+      [auxiliary]: []
     }
 
-    const currentCall = `hanoi(${n}, ${source}, ${target}, ${auxiliary})`
-    const newStack = [...stack, currentCall]
+    const totalMoves = Math.pow(2, n) - 1
 
-    solveHanoi(n - 1, source, auxiliary, target, movesList, newStack)
+    // For even n, swap target and auxiliary to get the correct rotation for the smallest disk
+    let dst = target
+    let aux = auxiliary
+    if (n % 2 === 0) {
+      dst = auxiliary
+      aux = target
+    }
 
-    movesList.push({
-      from: source,
-      to: target,
-      disk: n,
-      stack: [...newStack],
-      description: `Move disk ${n} from ${source} to ${target}`
-    })
+    const names = [source, dst, aux]
 
-    solveHanoi(n - 1, auxiliary, target, source, movesList, newStack)
+    // Helper to record a move
+    const recordMove = (from, to) => {
+      const disk = pegs[from].pop()
+      if (disk === undefined) return
+      pegs[to].push(disk)
+      movesList.push({
+        from,
+        to,
+        disk,
+        stack: [`iterative step ${movesList.length + 1}`],
+        description: `Move disk ${disk} from ${from} to ${to}`
+      })
+    }
+
+    for (let i = 1; i <= totalMoves; i++) {
+      if (i % 2 === 1) {
+        // Move the smallest disk to the next peg in rotation
+        // Find which peg has disk 1
+        let fromIdx = names.findIndex((p) => pegs[p].length && pegs[p][pegs[p].length - 1] === 1)
+        if (fromIdx === -1) {
+          // fallback: search anywhere
+          fromIdx = names.findIndex((p) => pegs[p].includes(1))
+        }
+        const toIdx = (fromIdx + 1) % 3
+        recordMove(names[fromIdx], names[toIdx])
+      } else {
+        // Make the only legal move that doesn't involve the smallest disk
+        const withoutSmall = names.filter((p) => !(pegs[p].length && pegs[p][pegs[p].length - 1] === 1))
+        const p1 = withoutSmall[0]
+        const p2 = withoutSmall[1]
+
+        const top1 = pegs[p1].length ? pegs[p1][pegs[p1].length - 1] : Infinity
+        const top2 = pegs[p2].length ? pegs[p2][pegs[p2].length - 1] : Infinity
+
+        if (top1 < top2) {
+          recordMove(p1, p2)
+        } else {
+          recordMove(p2, p1)
+        }
+      }
+    }
 
     return movesList
   }

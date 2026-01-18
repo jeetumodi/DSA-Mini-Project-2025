@@ -3,7 +3,7 @@ import React from 'react'
 const AlgorithmPanel = ({ algorithm, totalMoves, mode }) => {
   return (
     <div className="bg-gray-800 bg-opacity-50 backdrop-blur rounded-lg p-6 border border-gray-700 mb-6">
-      <h2 className="text-xl font-semibold mb-4 text-green-400">Recursive Algorithm</h2>
+      <h2 className="text-xl font-semibold mb-4 text-green-400">Non Recursive Algorithm</h2>
       <pre className="bg-gray-900 p-4 rounded overflow-x-auto text-sm font-mono text-green-300">
         {algorithm}
       </pre>
